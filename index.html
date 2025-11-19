@@ -1,381 +1,511 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot Asistente Académico</title>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chatbot Platform</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- React + ReactDOM CDN -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+  <!-- Babel para JSX inline -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-<body>
-    <div id="root"></div>
 
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
 
-        // Iconos SVG simplificados
-        const Send = () => (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="22" y1="2" x2="11" y2="13"></line>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-            </svg>
-        );
+<div id="root"></div>
 
-        const Bot = () => (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-            </svg>
-        );
+<script type="text/babel">
 
-        const User = () => (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-        );
+// ========================= ICONOS =========================
 
-        const Loader = () => (
-            <svg className="animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
-            </svg>
-        );
+const Send = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="22" y1="2" x2="11" y2="13"></line>
+    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+  </svg>
+);
 
-        const AlertCircle = () => (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="8" x2="12" y2="12"></line>
-                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-        );
+const Bot = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+  </svg>
+);
 
-        const Trash2 = () => (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            </svg>
-        );
+const User = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+    <circle cx="12" cy="7" r="4"></circle>
+  </svg>
+);
 
-        const CheckCircle = () => (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-        );
+const Upload = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+    <polyline points="17 8 12 3 7 8"></polyline>
+    <line x1="12" y1="3" x2="12" y2="15"></line>
+  </svg>
+);
 
-        const MessageSquare = () => (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </svg>
-        );
+const BarChart = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="12" y1="20" x2="12" y2="10"></line>
+    <line x1="18" y1="20" x2="18" y2="4"></line>
+    <line x1="6" y1="20" x2="6" y2="16"></line>
+  </svg>
+);
 
-        function ChatbotApp() {
-            const [messages, setMessages] = useState([
-                {
-                    role: 'assistant',
-                    content: '¡Hola! Soy tu asistente académico. ¿En qué puedo ayudarte hoy?',
-                    timestamp: new Date().toISOString()
-                }
-            ]);
-            const [input, setInput] = useState('');
-            const [loading, setLoading] = useState(false);
-            const [error, setError] = useState(null);
-            const [connectionStatus, setConnectionStatus] = useState('disconnected');
-            const messagesEndRef = useRef(null);
-            const inputRef = useRef(null);
+const History = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="12" cy="12" r="10"></circle>
+    <polyline points="12 6 12 12 16 14"></polyline>
+  </svg>
+);
 
-            const API_URL = 'http://localhost:4000/api/chat/query';
+const ThumbsUp = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+  </svg>
+);
 
-            const scrollToBottom = () => {
-                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-            };
+const ThumbsDown = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path>
+  </svg>
+);
 
-            useEffect(() => {
-                scrollToBottom();
-            }, [messages]);
 
-            useEffect(() => {
-                const checkConnection = async () => {
-                    try {
-                        const response = await fetch(API_URL.replace('/query', ''));
-                        if (response.ok || response.status === 404) {
-                            setConnectionStatus('connected');
-                        }
-                    } catch (err) {
-                        setConnectionStatus('error');
-                    }
-                };
-                checkConnection();
-            }, []);
+// ========================= APP =========================
 
-            const validateInput = (text) => {
-                if (!text.trim()) {
-                    setError('Por favor, escribe una pregunta');
-                    return false;
-                }
-                if (text.length > 1000) {
-                    setError('La pregunta es demasiado larga (máximo 1000 caracteres)');
-                    return false;
-                }
-                return true;
-            };
+const ChatbotPlatform = () => {
+  const [currentUser, setCurrentUser] = React.useState(null);
+  const [activeTab, setActiveTab] = React.useState("chat");
+  const [messages, setMessages] = React.useState([]);
+  const [input, setInput] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+  const [uploadFile, setUploadFile] = React.useState(null);
+  const [uploadStatus, setUploadStatus] = React.useState("");
+  const [analytics, setAnalytics] = React.useState(null);
+  const [conversationHistory, setConversationHistory] = React.useState([]);
+  const messagesEndRef = React.useRef(null);
 
-            const handleSubmit = async () => {
-                if (!validateInput(input)) {
-                    return;
-                }
+  const API_URL = "http://localhost:4000/api";
 
-                const userMessage = {
-                    role: 'user',
-                    content: input,
-                    timestamp: new Date().toISOString()
-                };
+  React.useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
-                setMessages(prev => [...prev, userMessage]);
-                setInput('');
-                setLoading(true);
-                setError(null);
+  // ==================== U1: Chat ====================
+  const handleSendMessage = async () => {
+    if (!input.trim() || !currentUser) return;
 
-                try {
-                    const response = await fetch(API_URL, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ question: input }),
-                    });
+    const userMessage = {
+      role: "user",
+      content: input,
+      timestamp: new Date().toISOString()
+    };
 
-                    if (!response.ok) {
-                        throw new Error(`Error del servidor: ${response.status}`);
-                    }
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
+    setLoading(true);
 
-                    const data = await response.json();
+    try {
+      const res = await fetch(`${API_URL}/chat/query`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: input,
+          userId: currentUser.id
+        })
+      });
 
-                    if (data.error) {
-                        throw new Error(data.error);
-                    }
+      const data = await res.json();
 
-                    const assistantMessage = {
-                        role: 'assistant',
-                        content: data.answer,
-                        timestamp: new Date().toISOString()
-                    };
+      const assistantMessage = {
+        role: "assistant",
+        content: data.answer,
+        timestamp: new Date().toISOString(),
+        messageId: Date.now()
+      };
 
-                    setMessages(prev => [...prev, assistantMessage]);
-                    setConnectionStatus('connected');
-                } catch (err) {
-                    console.error('Error al enviar mensaje:', err);
-                    setError(`Error de conexión: ${err.message}`);
-                    setConnectionStatus('error');
+      setMessages((prev) => [...prev, assistantMessage]);
+    } catch (err) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: "Error al procesar la solicitud.",
+          timestamp: new Date().toISOString(),
+          isError: true
+        }
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-                    const errorMessage = {
-                        role: 'assistant',
-                        content: 'Lo siento, hubo un problema al procesar tu solicitud. Por favor, verifica que el servidor esté corriendo e intenta nuevamente.',
-                        timestamp: new Date().toISOString(),
-                        isError: true
-                    };
-                    setMessages(prev => [...prev, errorMessage]);
-                } finally {
-                    setLoading(false);
-                    inputRef.current?.focus();
-                }
-            };
+  // ==================== U3: Feedback ====================
+  const handleFeedback = async (messageId, rating, comment = "") => {
+    await fetch(`${API_URL}/feedback`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: currentUser.id,
+        messageId,
+        rating,
+        comment,
+        timestamp: new Date().toISOString()
+      })
+    });
+    alert("¡Gracias por tu feedback!");
+  };
 
-            const handleKeyPress = (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSubmit();
-                }
-            };
+  // ==================== U2: Upload Docs ====================
+  const handleFileUpload = async () => {
+    if (!uploadFile || currentUser?.role !== "admin") return;
 
-            const clearChat = () => {
-                setMessages([
-                    {
-                        role: 'assistant',
-                        content: '¡Hola! Soy tu asistente académico. ¿En qué puedo ayudarte hoy?',
-                        timestamp: new Date().toISOString()
-                    }
-                ]);
-                setError(null);
-            };
+    const formData = new FormData();
+    formData.append("document", uploadFile);
+    formData.append("uploadedBy", currentUser.id);
 
-            const formatTime = (timestamp) => {
-                const date = new Date(timestamp);
-                return date.toLocaleTimeString('es-MX', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                });
-            };
+    setUploadStatus("Subiendo documento...");
 
-            return (
-                <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
-                    <div className="w-full max-w-4xl h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-                        
-                        {/* Header */}
-                        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
-                                    <Bot />
-                                </div>
-                                <div>
-                                    <h1 className="text-2xl font-bold">Asistente Académico</h1>
-                                    <div className="flex items-center gap-2 text-sm opacity-90">
-                                        <div className={`w-2 h-2 rounded-full ${
-                                            connectionStatus === 'connected' ? 'bg-green-400' : 
-                                            connectionStatus === 'error' ? 'bg-red-400' : 
-                                            'bg-yellow-400'
-                                        }`}></div>
-                                        <span>
-                                            {connectionStatus === 'connected' ? 'Conectado' : 
-                                             connectionStatus === 'error' ? 'Sin conexión' : 
-                                             'Conectando...'}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <button
-                                onClick={clearChat}
-                                className="bg-white/20 hover:bg-white/30 p-2 rounded-lg transition-colors backdrop-blur-sm"
-                                title="Limpiar conversación"
-                            >
-                                <Trash2 />
-                            </button>
-                        </div>
+    try {
+      const response = await fetch(`${API_URL}/documents/upload`, {
+        method: "POST",
+        body: formData
+      });
 
-                        {/* Messages Container */}
-                        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
-                            {messages.map((message, index) => (
-                                <div
-                                    key={index}
-                                    className={`flex gap-3 ${
-                                        message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
-                                    }`}
-                                    style={{
-                                        animation: 'fadeIn 0.3s ease-out'
-                                    }}
-                                >
-                                    <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                                        message.role === 'user' 
-                                            ? 'bg-gradient-to-br from-blue-500 to-indigo-500' 
-                                            : message.isError
-                                            ? 'bg-gradient-to-br from-red-500 to-pink-500'
-                                            : 'bg-gradient-to-br from-purple-500 to-indigo-500'
-                                    } text-white shadow-lg`}>
-                                        {message.role === 'user' ? <User /> : message.isError ? <AlertCircle /> : <Bot />}
-                                    </div>
+      const data = await response.json();
+      setUploadStatus(data.message || "Documento subido");
+      setUploadFile(null);
+    } catch (err) {
+      setUploadStatus("Error al subir documento");
+    }
+  };
 
-                                    <div className={`flex flex-col max-w-[70%] ${
-                                        message.role === 'user' ? 'items-end' : 'items-start'
-                                    }`}>
-                                        <div className={`rounded-2xl p-4 shadow-md ${
-                                            message.role === 'user'
-                                                ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-tr-none'
-                                                : message.isError
-                                                ? 'bg-red-50 text-red-900 border border-red-200 rounded-tl-none'
-                                                : 'bg-white text-gray-800 border border-gray-200 rounded-tl-none'
-                                        }`}>
-                                            <p className="whitespace-pre-wrap leading-relaxed">
-                                                {message.content}
-                                            </p>
-                                        </div>
-                                        <span className="text-xs text-gray-500 mt-1 px-2">
-                                            {formatTime(message.timestamp)}
-                                        </span>
-                                    </div>
-                                </div>
-                            ))}
+  // ==================== U4: Analytics ====================
+  const loadAnalytics = async () => {
+    const res = await fetch(`${API_URL}/analytics`);
+    const data = await res.json();
+    setAnalytics(data);
+  };
 
-                            {loading && (
-                                <div className="flex gap-3">
-                                    <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-purple-500 to-indigo-500 text-white shadow-lg">
-                                        <Bot />
-                                    </div>
-                                    <div className="bg-white rounded-2xl rounded-tl-none p-4 shadow-md border border-gray-200">
-                                        <div className="flex gap-2">
-                                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
+  // ==================== U5: History ====================
+  const loadHistory = async () => {
+    const res = await fetch(`${API_URL}/history/${currentUser.id}`);
+    const data = await res.json();
+    setConversationHistory(data.conversations || []);
+  };
 
-                            <div ref={messagesEndRef} />
-                        </div>
+  React.useEffect(() => {
+    if (activeTab === "analytics" && currentUser?.role === "admin") loadAnalytics();
+    if (activeTab === "history" && currentUser) loadHistory();
+  }, [activeTab, currentUser]);
 
-                        {error && (
-                            <div className="mx-6 mb-2 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-800 text-sm">
-                                <AlertCircle />
-                                <span>{error}</span>
-                            </div>
-                        )}
+  // ==================== Login ====================
+  const handleLogin = (role) => {
+    const user = {
+      id: `${role}-${Date.now()}`,
+      role,
+      name: role === "admin" ? "Administrador" : "Estudiante"
+    };
 
-                        {/* Input Area */}
-                        <div className="p-6 bg-white border-t border-gray-200">
-                            <div className="flex gap-3">
-                                <input
-                                    ref={inputRef}
-                                    type="text"
-                                    value={input}
-                                    onChange={(e) => {
-                                        setInput(e.target.value);
-                                        setError(null);
-                                    }}
-                                    onKeyPress={handleKeyPress}
-                                    placeholder="Escribe tu pregunta aquí..."
-                                    className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                    disabled={loading}
-                                />
-                                <button
-                                    onClick={handleSubmit}
-                                    disabled={loading || !input.trim()}
-                                    className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 font-medium shadow-lg hover:shadow-xl"
-                                >
-                                    {loading ? <Loader /> : <Send />}
-                                    <span className="hidden sm:inline">Enviar</span>
-                                </button>
-                            </div>
-                            
-                            <div className="mt-2 text-xs text-gray-500 text-right">
-                                {input.length}/1000 caracteres
-                            </div>
-                        </div>
+    setCurrentUser(user);
+    setMessages([
+      {
+        role: "assistant",
+        content: `¡Hola ${user.name}! ¿En qué puedo ayudarte?`,
+        timestamp: new Date().toISOString()
+      }
+    ]);
+  };
 
-                        {/* Info Footer */}
-                        <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between text-xs text-gray-600">
-                            <div className="flex items-center gap-2">
-                                <MessageSquare />
-                                <span>Integración Backend-Frontend | OpenAI GPT-4</span>
-                            </div>
-                            {connectionStatus === 'connected' && (
-                                <div className="flex items-center gap-1 text-green-600">
-                                    <CheckCircle />
-                                    <span>API Conectada</span>
-                                </div>
-                            )}
-                        </div>
+  // ==================== Si no hay login ====================
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full text-center">
+          <div className="bg-indigo-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Bot />
+          </div>
+
+          <h1 className="text-3xl font-bold text-gray-800">Chatbot Platform</h1>
+          <p className="text-gray-600 mt-2">Selecciona tu rol para continuar</p>
+
+          <div className="space-y-3 mt-6">
+            <button
+              onClick={() => handleLogin("student")}
+              className="w-full bg-blue-600 text-white py-3 rounded-lg"
+            >
+              Ingresar como Estudiante
+            </button>
+            <button
+              onClick={() => handleLogin("admin")}
+              className="w-full bg-indigo-600 text-white py-3 rounded-lg"
+            >
+              Ingresar como Administrador
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ==================== App Principal ====================
+  return (
+    <div className="max-w-6xl mx-auto p-4">
+      {/* Header */}
+      <div className="bg-white rounded-t-2xl shadow-lg p-4 flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <div className="bg-indigo-500 p-2 rounded-lg text-white">
+            <Bot />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-gray-800">Chatbot Platform</h1>
+            <p className="text-sm text-gray-600">{currentUser.name}</p>
+          </div>
+        </div>
+
+        <button onClick={() => setCurrentUser(null)} className="text-red-600 font-medium">
+          Cerrar Sesión
+        </button>
+      </div>
+
+      {/* Tabs */}
+      <div className="bg-white border-b flex gap-1 px-4">
+        <button
+          onClick={() => setActiveTab("chat")}
+          className={`px-4 py-3 font-medium ${
+            activeTab === "chat" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-600"
+          }`}
+        >
+          💬 Chat
+        </button>
+
+        {currentUser.role === "admin" && (
+          <>
+            <button
+              onClick={() => setActiveTab("upload")}
+              className={`px-4 py-3 font-medium ${
+                activeTab === "upload" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-600"
+              }`}
+            >
+              📤 Subir Docs
+            </button>
+
+            <button
+              onClick={() => setActiveTab("analytics")}
+              className={`px-4 py-3 font-medium ${
+                activeTab === "analytics" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-600"
+              }`}
+            >
+              📊 Analytics
+            </button>
+          </>
+        )}
+
+        <button
+          onClick={() => setActiveTab("history")}
+          className={`px-4 py-3 font-medium ${
+            activeTab === "history" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-600"
+          }`}
+        >
+          🕐 Historial
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="bg-white rounded-b-2xl shadow-lg p-6 min-h-[600px]">
+
+        {/* ========== TAB CHAT ========== */}
+        {activeTab === "chat" && (
+          <div className="h-full flex flex-col">
+            <div className="flex-1 overflow-y-auto space-y-4 mb-4">
+
+              {messages.map((msg, i) => (
+                <div key={i} className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    msg.role === "user" ? "bg-blue-600" : "bg-indigo-600"
+                  } text-white`}>
+                    {msg.role === "user" ? <User /> : <Bot />}
+                  </div>
+
+                  <div className="max-w-[70%]">
+                    <div className={`rounded-2xl p-4 ${
+                      msg.role === "user" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-800"
+                    }`}>
+                      {msg.content}
                     </div>
 
-                    <style>{`
-                        @keyframes fadeIn {
-                            from {
-                                opacity: 0;
-                                transform: translateY(10px);
-                            }
-                            to {
-                                opacity: 1;
-                                transform: translateY(0);
-                            }
-                        }
-                    `}</style>
-                </div>
-            );
-        }
+                    {/* Feedback */}
+                    {msg.role === "assistant" && msg.messageId && (
+                      <div className="flex gap-2 mt-2">
+                        <button
+                          onClick={() => handleFeedback(msg.messageId, "positive")}
+                          className="text-green-600"
+                        >
+                          <ThumbsUp />
+                        </button>
 
-        ReactDOM.render(<ChatbotApp />, document.getElementById('root'));
-    </script>
+                        <button
+                          onClick={() => {
+                            const c = prompt("¿Qué podemos mejorar?");
+                            if (c) handleFeedback(msg.messageId, "negative", c);
+                          }}
+                          className="text-red-600"
+                        >
+                          <ThumbsDown />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {loading && (
+                <div className="flex gap-3">
+                  <div className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center">
+                    <Bot />
+                  </div>
+                  <div className="bg-gray-100 rounded-2xl p-4">
+                    <span className="animate-pulse text-gray-500">Escribiendo...</span>
+                  </div>
+                </div>
+              )}
+
+              <div ref={messagesEndRef}></div>
+            </div>
+
+            <div className="flex gap-3">
+              <input
+                className="flex-1 px-4 py-3 border rounded-xl"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                placeholder="Escribe tu pregunta..."
+              />
+              <button
+                onClick={handleSendMessage}
+                className="bg-blue-600 text-white px-6 py-3 rounded-xl"
+              >
+                <Send />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ========== TAB UPLOAD (ADMIN) ========== */}
+        {activeTab === "upload" && currentUser.role === "admin" && (
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Subir Documentos</h2>
+
+            <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center">
+              <Upload />
+              <input
+                type="file"
+                className="mt-4"
+                accept=".pdf,.txt,.docx"
+                onChange={(e) => setUploadFile(e.target.files[0])}
+              />
+
+              {uploadFile && (
+                <div className="mt-4">
+                  <p>Archivo: {uploadFile.name}</p>
+                  <button
+                    onClick={handleFileUpload}
+                    className="bg-blue-600 text-white px-6 py-2 mt-2 rounded-lg"
+                  >
+                    Subir Documento
+                  </button>
+                </div>
+              )}
+
+              {uploadStatus && <p className="mt-4 font-medium">{uploadStatus}</p>}
+            </div>
+          </div>
+        )}
+
+        {/* ========== TAB ANALYTICS (ADMIN) ========== */}
+        {activeTab === "analytics" && currentUser.role === "admin" && (
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Dashboard de Analytics</h2>
+
+            {analytics ? (
+              <div className="grid md:grid-cols-3 gap-4">
+
+                <div className="bg-blue-50 p-6 rounded-xl">
+                  <p className="text-sm text-gray-600">Total Conversaciones</p>
+                  <p className="text-3xl font-bold text-blue-600">{analytics.totalConversations}</p>
+                </div>
+
+                <div className="bg-green-50 p-6 rounded-xl">
+                  <p className="text-sm text-gray-600">Feedback Positivo</p>
+                  <p className="text-3xl font-bold text-green-600">{analytics.positiveFeedback}</p>
+                </div>
+
+                <div className="bg-red-50 p-6 rounded-xl">
+                  <p className="text-sm text-gray-600">Feedback Negativo</p>
+                  <p className="text-3xl font-bold text-red-600">{analytics.negativeFeedback}</p>
+                </div>
+
+                <div className="bg-purple-50 p-6 rounded-xl">
+                  <p className="text-sm text-gray-600">Documentos Subidos</p>
+                  <p className="text-3xl font-bold text-purple-600">{analytics.totalDocuments}</p>
+                </div>
+
+                <div className="bg-orange-50 p-6 rounded-xl">
+                  <p className="text-sm text-gray-600">Usuarios Activos</p>
+                  <p className="text-3xl font-bold text-orange-600">{analytics.activeUsers}</p>
+                </div>
+
+                <div className="bg-indigo-50 p-6 rounded-xl">
+                  <p className="text-sm text-gray-600">Tiempo Promedio</p>
+                  <p className="text-3xl font-bold text-indigo-600">{analytics.avgResponseTime}</p>
+                </div>
+
+              </div>
+            ) : (
+              <p>Cargando analytics...</p>
+            )}
+          </div>
+        )}
+
+        {/* ========== TAB HISTORIAL ========== */}
+        {activeTab === "history" && (
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Historial de Conversaciones</h2>
+
+            {conversationHistory.length > 0 ? (
+              <div className="space-y-4">
+                {conversationHistory.map((c, i) => (
+                  <div key={i} className="border p-4 rounded-lg hover:bg-gray-50">
+                    <p className="text-sm text-gray-600">{new Date(c.timestamp).toLocaleString("es-MX")}</p>
+                    <p className="mt-2">{c.message}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p>No hay conversaciones previas.</p>
+            )}
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+};
+
+// ========================= RENDER APP =========================
+
+ReactDOM.createRoot(document.getElementById("root")).render(<ChatbotPlatform />);
+
+</script>
 </body>
 </html>
